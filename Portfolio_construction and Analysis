@@ -1,0 +1,110 @@
+ #What to expect
+#Required packages
+#Getting share price data 
+#Calculating individual share metrics
+#Portfolio construction
+#Some portfolio Analysis and key metrics
+
+##################################
+#installing and loading the packages required 
+intsall.packages("quantmod")
+install.packages("dplyr")
+install.packages("imputeTS")
+install.packages("PerformanceAnalytics")
+install.packages("PortfolioAnalytics")
+library(quantmod)
+library(PerformanceAnalytics)
+library(dplyr)
+library(imputeTS)
+library(PortfolioAnalytics)
+
+######################################
+#getting share data 
+start_date<-"2020-1-1"
+Google<-getSymbols.yahoo("GOOGL",from=start_date,auto.assign=F)
+Google_close<-getSymbols.yahoo("GOOGL",from=start_date,auto.assign=F)[,6]
+Google_Returns<-na.omit(dailyReturn(Google_close,type="log"))
+summary(Google$GOOGL.Adjusted)
+plot(Google$GOOGL.Close)
+chartSeries(Google)
+
+Google_Returns<-dailyReturn(Google_close)
+VaR(Google_Returns,p=0.999,method=c("historical"))
+CVaR(Google_Returns,p=0.999,method=c("historical"))
+VaR(Google_Returns,p=0.999,method=c("modified"))
+CVaR(Google_Returns,p=0.999,method=c("modified"))
+VaR(Google_Returns,p=0.999,method=c("gaussian"))
+CVaR(Google_Returns,p=0.999,method=c("gaussian"))
+
+##########################
+#getting a benchmark index 
+
+Benchmark_Prices<-getSymbols.yahoo("SPY",from=start_date,periodicity="daily",auto.assign=FALSE)[,4]
+colSums(is.na(Benchmark_Prices))
+Benchmark_Returns<-na.omit(ROC(Benchmark_Prices, type="discrete"))
+
+#Calculating some metrics
+CAPM.alpha(Google_Returns,Benchmark_Returns,0.35/252)
+CAPM.beta(Google_Returns,Benchmark_Returns,.035/252)
+CAPM.beta.bull(Google_Returns,Benchmark_Returns,.035/252)
+CAPM.beta.bear(Google_Returns,Benchmark_Returns,.035/252)
+CAPM.jensenAlpha(Google_Returns,Benchmark_Returns,.035/252)
+SharpeRatio(Google_Returns,Rf=.035/252,p=0.95,FUN="StdDev",weights=NULL,annualize=FALSE)
+
+table.AnnualizedReturns(Google_Returns,Rf=.035/252,geometric=TRUE)
+table.CalendarReturns(Google_Returns)
+
+#####################
+#creating a portfolio 
+shares<-c("FB","AAPL","AMZN","MSFT","GOOGL")
+weights<-c(.2,.2,.2,.2,.2)
+#Get Prices (can be monthly or weekly)
+Portfolio_Prices <- NULL
+for (Ticker in shares)
+  Portfolio_Prices<-cbind(Portfolio_Prices,getSymbols.yahoo(Ticker,from=startdate,periodicity="daily",auto.assign=FALSE)[,4])
+View(Portfolio_Prices)
+
+
+colnames(Portfolio_Prices)<-shares
+colSums(is.na(Portfolio_Prices))
+plot(Portfolio_Prices)
+plot(Portfolio_Prices,legend=shares,labels(colnames(Portfolio_Prices<-shares)))
+Daily_Returns<-na.omit(ROC(Portfolio_Prices,type="discrete")) #calculating daily returns
+Portfolio_Return<-Return.portfolio(Daily_Returns,weights=weights) #calculating portfolio returns
+
+chart.CumReturns(Portfolio_Return) #plotting portfolio returns
+
+Portfolio_Returns<-na.omit(ROC(Portfolio_Prices,type = "discrete"))
+Portfolio_Returns<-na.omit(ROC(Portfolio_Prices,type = "discrete"))
+plot(Portfolio_Returns,type = "b")
+chart.CumReturns(Portfolio_Returns)
+charts.PerformanceSummary(Portfolio_Returns) #summary performance of the portfolio 
+colnames(Portfolio_Returns)<-shares
+
+############
+#Calculating some key metrics
+#Value_at_Risk & Expected Shortfall 
+VaR(Portfolio_Returns,p=0.99,weights = weights,portfolio_method = "component",method = "modified")
+ES(Portfolio_Returns,p=0.99,weights = weights,portfolio_method = "component",method = "modified")
+VaR_hist<-VaR(Portfolio_Returns,P=0.95,weights = NULL,portfolio_method = "single",method = "historical")
+VaR_mod<-VaR(Portfolio_Returns,P=0.95,weights = NULL,portfolio_method = "single",method = "modified")
+VaR_gaus<-VaR(Portfolio_Returns,P=0.95,weights = NULL,portfolio_method = "single",method = "gaussian")
+ALL.VaR<- data.frame(rbind(VaR_hist,VaR_mod,VaR_gaus))
+rownames(ALL.VaR)<-c("Hist","Mod","Gauss")
+Portfolio_VaR_hist<-VaR(Portfolio_Returns,p=0.99,weights = weights,portfolio_method = "component",method = "historical")$hVaR
+Portfolio_VaR_mod<-VaR(Portfolio_Returns,p=0.99,weights = weights,portfolio_method = "component",method = "modified")$MVaR
+Portfolio_VaR_gauss<-VaR(Portfolio_Returns,p=0.99,weights = weights,portfolio_method = "component",method = "gaussian")$VaR
+Portfolio_VaR_hist
+Portfolio_VaR_mod
+Portfolio_VaR_gauss
+ALL.VaR
+
+#CAPM & Sharpe Ratio
+CAPM.beta(Portfolio_Return,Benchmark_Returns,.035/252)
+CAPM.beta.bull(Portfolio_Return,Benchmark_Returns,.035/252)
+CAPM.beta.bear(Portfolio_Return,Benchmark_Returns,.035/252)
+CAPM.jensenAlpha(Portfolio_Return,Benchmark_Returns,.035/252)
+SharpeRatio(Portfolio_Return,Rf=.035/252,p=0.95,FUN="StdDev",weights=NULL,annualize=FALSE)
+
+table.AnnualizedReturns(Portfolio_Return,Rf=.035/252,geometric=TRUE)
+table.CalendarReturns(Portfolio_Return)
