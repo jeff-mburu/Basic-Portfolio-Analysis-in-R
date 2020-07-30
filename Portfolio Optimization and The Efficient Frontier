@@ -1,0 +1,24 @@
+#Portfolio optimization and the efficient frontier 
+
+Portfolio_Returns1 <- na.omit(ROC(Portfolio_Prices))
+
+portfolio<-portfolio.spec(colnames(Portfolio_Returns1))
+
+portfolio <- add.constraint(portfolio, type="weight_sum", min_sum=0.99, max_sum=1.01)
+portfolio <- add.constraint(portfolio, type="box", min=.10, max=.40)
+portfolio <- add.objective(portfolio, type="return", name="mean")
+portfolio <- add.objective(portfolio, type="risk", name="StdDev")
+
+Optimized_Portfolio <- optimize.portfolio(Portfolio_Returns1, portfolio,optimize_method="random",trace=TRUE)
+
+chart.Weights(Optimized_Portfolio)
+
+efficient_frontier <- extractEfficientFrontier(Optimized_Portfolio, match.col = "StdDev", n.portfolios = 1000,
+                               risk_aversion = NULL)
+
+chart.EfficientFrontier(efficient_frontier,
+                        match.col = "StdDev", n.portfolios = 25, xlim = NULL, ylim = NULL,
+                        cex.axis = 0.8, element.color = "darkgray", main = "Efficient Frontier",
+                        RAR.text = "SR", rf = 0, tangent.line = TRUE, cex.legend = 0.8,
+                        chart.assets = TRUE, labels.assets = TRUE, pch.assets = 21,
+                        cex.assets = 0.8)
