@@ -1,24 +1,62 @@
 #Portfolio optimization and the efficient frontier 
+Portfolio_Returns<-na.omit(ROC(Portfolio_Prices))
 
-Portfolio_Returns1 <- na.omit(ROC(Portfolio_Prices))
+Portfolio_object<-portfolio.spec(colnames(Portfolio_Returns))
 
-portfolio<-portfolio.spec(colnames(Portfolio_Returns1))
+Portfolio_object<-add.constraint(Portfolio_object, type="weight_sum", min_sum=0.99, max_sum=1.01)
+Portfolio_object<-add.constraint(Portfolio_object, type="box", min=.10, max=.40)
+Portfolio_object<-add.objective(Portfolio_object, type="return", name="mean")
+Portfolio_object<-add.objective(Portfolio_object, type="risk", name="StdDev")
 
-portfolio <- add.constraint(portfolio, type="weight_sum", min_sum=0.99, max_sum=1.01)
-portfolio <- add.constraint(portfolio, type="box", min=.10, max=.40)
-portfolio <- add.objective(portfolio, type="return", name="mean")
-portfolio <- add.objective(portfolio, type="risk", name="StdDev")
+Optimized_portfolio<-optimize.portfolio(Portfolio_Returns,Portfolio_object,optimize_method="random",trace=TRUE)
 
-Optimized_Portfolio <- optimize.portfolio(Portfolio_Returns1, portfolio,optimize_method="random",trace=TRUE)
+chart.Weights(Optimized_portfolio)
 
-chart.Weights(Optimized_Portfolio)
-
-efficient_frontier <- extractEfficientFrontier(Optimized_Portfolio, match.col = "StdDev", n.portfolios = 1000,
+Efficient_Frontier<-extractEfficientFrontier(Optimized_portfolio, match.col = "StdDev", n.portfolios = 1000,
                                risk_aversion = NULL)
 
-chart.EfficientFrontier(efficient_frontier,
+chart.EfficientFrontier(Efficient_Frontier,
                         match.col = "StdDev", n.portfolios = 25, xlim = NULL, ylim = NULL,
                         cex.axis = 0.8, element.color = "darkgray", main = "Efficient Frontier",
                         RAR.text = "SR", rf = 0, tangent.line = TRUE, cex.legend = 0.8,
                         chart.assets = TRUE, labels.assets = TRUE, pch.assets = 21,
                         cex.assets = 0.8)
+#########################################################################
+#Portfolio Optimization Backtesting 
+
+Portfolio_Returns<-na.omit(ROC(Portfolio_Prices))
+
+portfolio_object<-portfolio.spec(colnames(Portfolio_Returns))
+
+portfolio_object<-add.constraint(portfolio_object, type="weight_sum", min_sum=0.99, max_sum=1.01)
+portfolio_object<-add.constraint(portfolio_object, type="transaction_cost", ptc = 0.01)
+portfolio_object<-add.constraint(portfolio_object, type="box", min=.1, max=.40)
+portfolio_object<-add.objective(portfolio_object, type="return", name="mean")
+portfolio_object<-add.objective(portfolio_object, type="risk", name="StdDev", target=0.005)
+
+Random_Portfolio_Object<-random_portfolios(portfolio_object,10000,"sample")
+
+Optimal_portfolio_rebalancing<-optimize.portfolio.rebalancing(Portfolio_Returns,
+                                                              portfolio_object,
+                                                              optimize_method="random",
+                                                              Random_Portfolio_Object=Random_Portfolio_Object,
+                                                              rebalance_on="months",
+                                                              training_period=1,
+                                                              rolling_window=10)
+
+equal_weight<-rep(1/ncol(Portfolio_Returns),ncol(Portfolio_Returns))
+benchmark<-Return.portfolio(Portfolio_Returns,weights=equal_weight)
+colnames(benchmark)<-"Benchmark Portfolio"
+
+SP500_Prices<-getSymbols.yahoo("SPY",from=start_date,periodicity='daily',auto.assign=FALSE)[,4]
+SP500_Returns<-na.omit(ROC(SP500_Prices))
+SP500_Returns<-as.xts(SP500_Returns)
+
+chart.Weights(Optimal_portfolio_rebalancing, main="Rebalanced Portfolio Weights Over Time")
+
+Rebalanced_Weights<-extractWeights(Optimal_portfolio_rebalancing)
+Rebalanced_Returns<-Return.portfolio(Portfolio_Returns,weights=Rebalanced_Weights)
+
+Returns_Data_Frame<-cbind(Rebalanced_Returns,benchmark,SP500_Returns)
+
+charts.PerformanceSummary(Returns_Data_Frame, main="Portfolio Performance Over Time")
