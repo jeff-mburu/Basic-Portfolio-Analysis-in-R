@@ -1,0 +1,35 @@
+#Capture Ratios_for_Assets#
+#Only Up and Down Ratios
+table.UpDownRatios(Portfolio_Returns[,1:5],Portfolio_Returns[,2],digits=4)
+#More Detailed Table
+table.CaptureRatios(Portfolio_Returns[,1:5],Portfolio_Returns[,2],digits=4)
+#Chart
+chart.CaptureRatios(Portfolio_Returns[,1:5],Portfolio_Returns[,5],main="Capture Ratio", 
+                    add.names=TRUE,element.color="red",benchmark.color="blue",
+                    xlab="Downside Capture",ylab="Upside Capture")
+
+UpsideFrequency(Portfolio_Returns)
+UpsidePotentialRatio(Portfolio_Returns)
+UpsideRisk(Portfolio_Returns)
+
+table.DownsideRisk(Portfolio_Returns)
+DownsideFrequency(Portfolio_Returns)
+DownsidePotential(Portfolio_Returns)
+DownsideDeviation(Portfolio_Returns)
+
+#Capture_Ratios_for_Portfolio
+#Only Up and Down Ratios
+table.CaptureRatios(Combined_Returns,Portfolio_Returns,digits=4)
+table.UpDownRatios(Combined_Returns,Portfolio_Returns,digits=4)
+chart.CaptureRatios(Combined_Returns, Portfolio_Returns[,5], main = "Capture Ratio", 
+                    add.names = TRUE, element.color = "red", benchmark.color = "blue",
+                    xlab = "Downside Capture", ylab = "Upside Capture")
+
+UpsideFrequency(Combined_Returns)
+UpsidePotentialRatio(Combined_Returns)
+UpsideRisk(Combined_Returns)
+
+table.DownsideRisk(Combined_Returns)
+DownsideFrequency(Combined_Returns)
+DownsidePotential(Combined_Returns)
+DownsideDeviation(Combined_Returns)
