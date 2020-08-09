@@ -12,11 +12,13 @@ install.packages("dplyr")
 install.packages("imputeTS")
 install.packages("PerformanceAnalytics")
 install.packages("PortfolioAnalytics")
+install.packages("quand1")
 library(quantmod)
 library(PerformanceAnalytics)
 library(dplyr)
 library(imputeTS)
 library(PortfolioAnalytics)
+library(quand1)
 
 ######################################
 #getting share data 
