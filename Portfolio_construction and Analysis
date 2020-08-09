@@ -41,7 +41,7 @@ CVaR(Google_Returns,p=0.999,method=c("gaussian"))
 
 Benchmark_Prices<-getSymbols.yahoo("SPY",from=start_date,periodicity="daily",auto.assign=FALSE)[,4]
 colSums(is.na(Benchmark_Prices))
-Benchmark_Returns<-na.omit(ROC(Benchmark_Prices, type="discrete"))
+Benchmark_Returns<-na.omit(ROC(Benchmark_Prices,type="discrete"))
 
 #Calculating some metrics
 CAPM.alpha(Google_Returns,Benchmark_Returns,0.35/252)
@@ -59,7 +59,7 @@ table.CalendarReturns(Google_Returns)
 shares<-c("FB","AAPL","AMZN","MSFT","GOOGL")
 weights<-c(.2,.2,.2,.2,.2)
 #Get Prices (can be monthly or weekly)
-Portfolio_Prices <- NULL
+Portfolio_Prices<-NULL
 for (Ticker in shares)
   Portfolio_Prices<-cbind(Portfolio_Prices,getSymbols.yahoo(Ticker,from=startdate,periodicity="daily",auto.assign=FALSE)[,4])
 View(Portfolio_Prices)
@@ -100,11 +100,11 @@ Portfolio_VaR_gauss
 ALL.VaR
 
 #CAPM & Sharpe Ratio
-CAPM.beta(Portfolio_Return,Benchmark_Returns,.035/252)
-CAPM.beta.bull(Portfolio_Return,Benchmark_Returns,.035/252)
-CAPM.beta.bear(Portfolio_Return,Benchmark_Returns,.035/252)
-CAPM.jensenAlpha(Portfolio_Return,Benchmark_Returns,.035/252)
-SharpeRatio(Portfolio_Return,Rf=.035/252,p=0.95,FUN="StdDev",weights=NULL,annualize=FALSE)
+CAPM.beta(Portfolio_Returns,Benchmark_Returns,.035/252)
+CAPM.beta.bull(Portfolio_Returns,Benchmark_Returns,.035/252)
+CAPM.beta.bear(Portfolio_Returns,Benchmark_Returns,.035/252)
+CAPM.jensenAlpha(Portfolio_Returns,Benchmark_Returns,.035/252)
+SharpeRatio(Portfolio_Returns,Rf=.035/252,p=0.95,FUN="StdDev",weights=NULL,annualize=FALSE)
 
-table.AnnualizedReturns(Portfolio_Return,Rf=.035/252,geometric=TRUE)
-table.CalendarReturns(Portfolio_Return)
+table.AnnualizedReturns(Portfolio_Returns,Rf=.035/252,geometric=TRUE)
+table.CalendarReturns(Portfolio_Returns)
