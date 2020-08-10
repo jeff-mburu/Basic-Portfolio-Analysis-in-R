@@ -41,7 +41,7 @@ CVaR(Google_Returns,p=0.999,method=c("gaussian"))
 ##########################
 #getting a benchmark index 
 
-Benchmark_Prices<-getSymbols.yahoo("^GSPC^",from=start_date,periodicity="daily",auto.assign=FALSE)[,4]
+Benchmark_Prices<-getSymbols.yahoo("^GSPC",from=start_date,periodicity="daily",auto.assign=FALSE)[,4]
 colSums(is.na(Benchmark_Prices))
 Benchmark_Returns<-na.omit(ROC(Benchmark_Prices,type="discrete"))
 
