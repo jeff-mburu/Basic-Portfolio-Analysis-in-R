@@ -48,7 +48,7 @@ equal_weight<-rep(1/ncol(Portfolio_Returns),ncol(Portfolio_Returns))
 benchmark<-Return.portfolio(Portfolio_Returns,weights=equal_weight)
 colnames(benchmark)<-"Benchmark Portfolio"
 
-SP500_Prices<-getSymbols.yahoo("^GSPC^",from=start_date,periodicity='daily',auto.assign=FALSE)[,4]
+SP500_Prices<-getSymbols.yahoo("^GSPC",from=start_date,periodicity='daily',auto.assign=FALSE)[,4]
 SP500_Returns<-na.omit(ROC(SP500_Prices))
 SP500_Returns<-as.xts(SP500_Returns)
 
